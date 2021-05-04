@@ -48,7 +48,9 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         chatScreenBinding.chatscreenRecycler.addOnLayoutChangeListener(object : View.OnLayoutChangeListener{
             override fun onLayoutChange(p0: View?, p1: Int, p2: Int, p3: Int, p4: Int, p5: Int, p6: Int, p7: Int, p8: Int) {
                 if(p4 < p8){
-                    chatScreenBinding.chatscreenRecycler.smoothScrollToPosition(chatAdapter.itemCount-1)
+                    if(chatAdapter != null && chatAdapter.itemCount > 0){
+                        chatScreenBinding.chatscreenRecycler.smoothScrollToPosition(chatAdapter.itemCount-1)
+                    }
                 }
             }
 
