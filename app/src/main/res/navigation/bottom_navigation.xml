@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bottom_navigation"
+    app:startDestination="@id/conversation">
+
+    <fragment
+        android:id="@+id/conversation"
+        android:name="com.example.cometchatprotask.cometchatactivities.Conversation"
+        android:label="Conversation"
+        tools:layout="@layout/fragment_conversation" />
+    <fragment
+        android:id="@+id/user"
+        android:name="com.example.cometchatprotask.cometchatactivities.User"
+        android:label="Users"
+        tools:layout="@layout/fragment_user" />
+    <fragment
+        android:id="@+id/groups"
+        android:name="com.example.cometchatprotask.cometchatactivities.Groups"
+        android:label="Groups"
+        tools:layout="@layout/fragment_groups" />
+    <fragment
+        android:id="@+id/profile"
+        android:name="com.example.cometchatprotask.cometchatactivities.Profile"
+        android:label="Account"
+        tools:layout="@layout/fragment_profile" />
+</navigation>
