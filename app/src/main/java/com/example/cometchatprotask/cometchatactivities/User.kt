@@ -15,18 +15,21 @@ import com.cometchat.pro.models.User
 import com.example.cometchatprotask.cometchatactivities.adapters.OnClickInterface
 import com.example.cometchatprotask.cometchatactivities.adapters.UserListAdapter
 import com.example.cometchatprotask.databinding.FragmentUserBinding
+import com.example.cometchatprotask.databinding.RecyclerBinding
 import com.example.cometchatprotask.handler.toast
 
 
 class User : Fragment(),OnClickInterface {
     lateinit var binding: FragmentUserBinding
+    lateinit var subBindig : RecyclerBinding
     lateinit var adapter: UserListAdapter
     private  val TAG = "User"
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         binding = FragmentUserBinding.inflate(layoutInflater)
+        subBindig = RecyclerBinding.bind(binding.root)
         adapter = UserListAdapter(this)
-        binding.userRecycler.recycler.adapter = adapter
+        subBindig.recycler.adapter = adapter
         getUserList()
         return binding.root
     }

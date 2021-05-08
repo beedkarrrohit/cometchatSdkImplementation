@@ -19,18 +19,23 @@ import com.cometchat.pro.models.TextMessage
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.adapters.GroupMessageAdapter
 import com.example.cometchatprotask.databinding.ActivityGroupChatScreenBinding
+import com.example.cometchatprotask.databinding.CreateTextMessageLayoutBinding
 import com.example.cometchatprotask.handler.toast
 
 class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     lateinit var binding : ActivityGroupChatScreenBinding
+    lateinit var subBinding : CreateTextMessageLayoutBinding
     lateinit var bundle: Bundle
     lateinit var adapter: GroupMessageAdapter
     private  val TAG = "GroupChatScreenActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityGroupChatScreenBinding.inflate(layoutInflater)
+        subBinding = CreateTextMessageLayoutBinding.bind(binding.root)
         setContentView(binding.root)
         setSupportActionBar(binding.groupChatToolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
         bundle = intent.extras!!
         setupFields()
     }
@@ -40,7 +45,7 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         binding.groupName.text = bundle.getString("gname")
         adapter = GroupMessageAdapter()
         binding.groupRecy.adapter = adapter
-        binding.createMessage.sendBtn.setOnClickListener(this)
+        subBinding.sendBtn.setOnClickListener(this)
 
     }
 
@@ -118,9 +123,9 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     override fun onClick(p0: View?) {
         when(p0?.id){
             R.id.send_btn -> {
-                if(checkInput(binding.createMessage.edtMsg.text.toString())){
-                    sendMessage(binding.createMessage.edtMsg.text.toString())
-                    binding.createMessage.edtMsg.text = null
+                if(checkInput(subBinding.edtMsg.text.toString())){
+                    sendMessage(subBinding.edtMsg.text.toString())
+                    subBinding.edtMsg.text = null
                 }
             }
         }
@@ -146,5 +151,6 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     private fun checkInput(message:String):Boolean{
         return !(TextUtils.isEmpty(message))
     }
+
 
 }

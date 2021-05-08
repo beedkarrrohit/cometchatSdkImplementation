@@ -25,4 +25,9 @@
         android:name="com.example.cometchatprotask.cometchatactivities.Profile"
         android:label="Account"
         tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/calls"
+        android:name="com.example.cometchatprotask.cometchatactivities.calls"
+        android:label="Calls"
+        tools:layout="@layout/fragment_calls" />
 </navigation>

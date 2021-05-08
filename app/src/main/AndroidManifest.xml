@@ -10,11 +10,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.CometChatProtask">
-        <activity android:name=".cometchatactivities.GroupChatScreenActivity" android:theme="@style/Theme.SplashTheme"></activity>
+        <activity android:name=".cometchatactivities.CallingScreen"></activity>
+        <activity
+            android:name=".cometchatactivities.GroupChatScreenActivity"
+            android:theme="@style/Theme.SplashTheme" />
         <activity
             android:name=".cometchatactivities.ChatScreenActivity"
             android:theme="@style/Theme.SplashTheme"
-            android:windowSoftInputMode="adjustResize"></activity>
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".cometchatactivities.CometChatActivity" />
         <activity
             android:name=".splashactivity.SplashActivity"

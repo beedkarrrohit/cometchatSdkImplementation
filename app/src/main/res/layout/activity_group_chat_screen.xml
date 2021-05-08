@@ -24,7 +24,8 @@
                 android:layout_height="match_parent"
                 android:minHeight="?attr/actionBarSize"
                 app:title=" "
-                app:titleTextColor="@color/white" />
+                android:background="@color/white"
+                app:titleTextColor="@color/black" />
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/group_icon"
@@ -32,22 +33,24 @@
                 android:layout_height="40dp"
                 android:layout_marginStart="15dp"
                 android:src="@drawable/user"
-                app:civ_border_color="@color/white"
-                app:civ_border_width="0.5dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.08"
+                />
 
             <TextView
                 android:id="@+id/group_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="21sp"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.42"
-                app:layout_constraintStart_toEndOf="@id/group_icon"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
                 tools:text="groupname" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -64,11 +67,13 @@
 
     <include
         android:id="@+id/create_message"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
         layout="@layout/create_text_message_layout"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/group_recy"
+        app:layout_constraintVertical_bias="1.0"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

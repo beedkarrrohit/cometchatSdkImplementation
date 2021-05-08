@@ -18,17 +18,20 @@ import com.cometchat.pro.models.User
 import com.example.cometchatprotask.cometchatactivities.adapters.GroupListAdapter
 import com.example.cometchatprotask.cometchatactivities.adapters.OnClickInterface
 import com.example.cometchatprotask.databinding.FragmentGroupsBinding
+import com.example.cometchatprotask.databinding.RecyclerBinding
 import com.example.cometchatprotask.handler.toast
 
 class Groups : Fragment(),OnClickInterface {
     lateinit var binding : FragmentGroupsBinding
+    lateinit var subBinding :RecyclerBinding
     lateinit var groupListAdapter: GroupListAdapter
     private val TAG = "Groups"
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         binding = FragmentGroupsBinding.inflate(layoutInflater)
+        subBinding = RecyclerBinding.bind(binding.root)
         groupListAdapter = GroupListAdapter(this)
-        binding.grouprecycler.recycler.adapter = groupListAdapter
+        subBinding.recycler.adapter = groupListAdapter
         getGroupList()
         Log.e(TAG, "selfId: $uid", )
         return binding.root

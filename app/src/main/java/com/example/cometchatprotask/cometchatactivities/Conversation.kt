@@ -17,17 +17,20 @@ import com.cometchat.pro.models.User
 import com.example.cometchatprotask.cometchatactivities.adapters.ConversationListAdapter
 import com.example.cometchatprotask.cometchatactivities.adapters.OnClickInterface
 import com.example.cometchatprotask.databinding.FragmentConversationBinding
+import com.example.cometchatprotask.databinding.RecyclerBinding
 
 
 class Conversation : Fragment(),OnClickInterface {
     lateinit var binding : FragmentConversationBinding
+    lateinit var subBinding : RecyclerBinding
     lateinit var adapter : ConversationListAdapter
     private val TAG = "Conversation"
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         binding = FragmentConversationBinding.inflate(layoutInflater)
+        subBinding = RecyclerBinding.bind(binding.root)
         adapter = ConversationListAdapter(this)
-        binding.conversationRecycler.recycler.adapter = adapter
+        subBinding.recycler.adapter = adapter
         getConversationList()
         Log.e(TAG, "selfId: $uid" )
         return binding.root
@@ -37,12 +40,13 @@ class Conversation : Fragment(),OnClickInterface {
         var conversationsRequest : ConversationsRequest? = null
         var limit = 30
         conversationsRequest = ConversationsRequest.ConversationsRequestBuilder().setLimit(limit).build()
-        conversationsRequest?.fetchNext(object: CometChat.CallbackListener<List<Conversation>>(){
+        conversationsRequest?.fetchNext(object : CometChat.CallbackListener<List<Conversation>>() {
             override fun onSuccess(p0: List<Conversation>?) {
-                if(p0 != null){
+                if (p0 != null) {
+                    Log.e(TAG, "onSuccess: $p0", )
                     binding.noCon.visibility = View.GONE
                     adapter.submitList(p0)
-                }else{
+                } else {
                     binding.noCon.visibility = View.VISIBLE
                 }
             }

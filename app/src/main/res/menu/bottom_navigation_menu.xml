@@ -16,6 +16,11 @@
         android:icon="@drawable/group"
         android:id="@+id/groups"/>
     <item
+        android:title="Calls"
+        android:id="@+id/calls"
+        android:icon="@drawable/ic_round_call_24"
+        />
+    <item
         android:title="account"
         android:id="@+id/profile"
         android:icon="@drawable/ic_baseline_account_circle_24"

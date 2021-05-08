@@ -9,10 +9,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.cometchat.pro.constants.CometChatConstants
-import com.cometchat.pro.models.Conversation
-import com.cometchat.pro.models.Group
-import com.cometchat.pro.models.TextMessage
-import com.cometchat.pro.models.User
+import com.cometchat.pro.core.Call
+import com.cometchat.pro.models.*
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.databinding.FragmentConversationBinding
 import com.example.cometchatprotask.databinding.RecyclerItemRowBinding
@@ -20,6 +18,7 @@ import com.example.cometchatprotask.databinding.RecyclerItemRowBinding
 class ConversationListAdapter(private val onClickInterface: OnClickInterface) : ListAdapter<Conversation,ConversationListAdapter.ConversationViewHolder>(comparator){
     class ConversationViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
         private val TAG = "ConversationListAdapter"
+
         companion object{
             lateinit var binding:RecyclerItemRowBinding
             fun create(parent: ViewGroup): ConversationViewHolder{
@@ -30,23 +29,61 @@ class ConversationListAdapter(private val onClickInterface: OnClickInterface) : 
         }
         fun bind(conversation: Conversation,onClickInterface: OnClickInterface){
             Log.d(TAG, "bind: $conversation")
-            if(conversation.conversationType == CometChatConstants.CONVERSATION_TYPE_GROUP){
-                if(conversation.lastMessage.type == CometChatConstants.MESSAGE_TYPE_TEXT){
-                    val lastmessage = conversation.lastMessage as TextMessage
-                    binding.status.text = lastmessage.text
+            when(conversation.conversationType){
+                CometChatConstants.CONVERSATION_TYPE_GROUP ->{
+                    if(conversation.lastMessage != null){
+                        when(conversation.lastMessage.category){
+                            CometChatConstants.CATEGORY_ACTION ->{
+                                when(conversation.lastMessage.type){
+                                    CometChatConstants.ActionKeys.ACTION_TYPE_GROUP_MEMBER->{binding.status.text = (conversation.lastMessage as Action).message}
+                                    CometChatConstants.ActionKeys.ACTION_TYPE_MESSAGE->{}
+                                }
+                            }CometChatConstants.CATEGORY_MESSAGE -> {
+                            when(conversation.lastMessage.type){
+                                CometChatConstants.MESSAGE_TYPE_TEXT ->{binding.status.text =(conversation.lastMessage as TextMessage).text}
+                                CometChatConstants.MESSAGE_TYPE_AUDIO ->{}
+                                CometChatConstants.MESSAGE_TYPE_IMAGE ->{}
+                                CometChatConstants.MESSAGE_TYPE_VIDEO->{}
+                                CometChatConstants.MESSAGE_TYPE_FILE->{}
+                            }
+                        }CometChatConstants.CATEGORY_CALL ->{
+                            when(conversation.lastMessage.type){
+                                CometChatConstants.CALL_TYPE_AUDIO->{}
+                                CometChatConstants.CALL_TYPE_VIDEO->{}
+                            }
+                        }CometChatConstants.CATEGORY_CUSTOM->{}
+                        }
+                    }else{
+                        binding.status.text = "Tap to start the conversation"
+                    }
+                    var group = conversation.conversationWith as Group
+                    binding.usersName.text = group.name
+                    Glide.with(itemView).load(group.icon).placeholder(R.drawable.user).into(binding.avatar)
                 }
-                var group = conversation.conversationWith as Group
-                binding.usersName.text = group.name
-                Glide.with(itemView).load(group.icon).into(binding.avatar)
-            }else{
-                if(conversation.lastMessage.type == CometChatConstants.MESSAGE_TYPE_TEXT){
-                    val lastMessage = conversation.lastMessage as TextMessage
-                    binding.status.text = lastMessage.text
+
+                CometChatConstants.CONVERSATION_TYPE_USER ->{
+                    when(conversation.lastMessage.category){
+                        CometChatConstants.CATEGORY_MESSAGE -> {
+                            when(conversation.lastMessage.type){
+                                CometChatConstants.MESSAGE_TYPE_TEXT ->{binding.status.text =(conversation.lastMessage as TextMessage).text}
+                                CometChatConstants.MESSAGE_TYPE_AUDIO ->{}
+                                CometChatConstants.MESSAGE_TYPE_IMAGE ->{}
+                                CometChatConstants.MESSAGE_TYPE_VIDEO->{}
+                                CometChatConstants.MESSAGE_TYPE_FILE->{}
+                            }
+                        }CometChatConstants.CATEGORY_CALL ->{
+                        when(conversation.lastMessage.type){
+                            CometChatConstants.CALL_TYPE_AUDIO->{binding.status.text =(conversation.lastMessage as Call).callStatus}
+                            CometChatConstants.CALL_TYPE_VIDEO->{}
+                        }
+                    }CometChatConstants.CATEGORY_CUSTOM->{}
+                    }
+                    binding.usersName.text =(conversation.conversationWith as User).name
+                    Glide.with(itemView).load((conversation.conversationWith as User).avatar).placeholder(R.drawable.user)
+                        .into(binding.avatar)
                 }
-                var user = conversation.conversationWith as User
-                binding.usersName.text = user.name
-                Glide.with(itemView).load(user.avatar).into(binding.avatar)
             }
+
             binding.itemRow.setOnClickListener {
                 onClickInterface.onItemClick(adapterPosition)
             }

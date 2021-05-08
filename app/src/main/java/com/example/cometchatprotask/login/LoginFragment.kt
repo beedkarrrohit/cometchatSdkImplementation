@@ -30,7 +30,7 @@ class LoginFragment : Fragment(),View.OnClickListener {
                 findNavController().navigate(R.id.action_loginFragment_to_createUserFragment)
             }
             R.id.login -> {
-                var UID = binding.UID.text.toString()
+                var UID = binding.uid.text.toString()
                 Login.login(requireContext(),UID)
             }
         }

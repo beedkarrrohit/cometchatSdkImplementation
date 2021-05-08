@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import com.cometchat.pro.models.TextMessage
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.databinding.LeftTextMessageLayoutBinding
+import com.example.cometchatprotask.utils.CommonUtils
 
 class LeftMessageViewHolder(itemView : View) : BaseViewHolder(itemView){
     companion object{
@@ -18,5 +19,7 @@ class LeftMessageViewHolder(itemView : View) : BaseViewHolder(itemView){
     }
     fun bind(message : TextMessage){
         binding.leftMessage.text = message.text
+        binding.timestamp.text = CommonUtils.convertTimestampToDate(message.deliveredToMeAt)
+
     }
 }

@@ -27,7 +27,7 @@ class UserListAdapter(private val onClickInterface: OnClickInterface) : ListAdap
         fun bind(current : User,onClickInterface: OnClickInterface){
             binding.usersName.text = current.name
             binding.status.text = current.status
-            Glide.with(itemView).load(current.avatar).into(binding.avatar)
+            Glide.with(itemView).load(current.avatar).placeholder(R.drawable.user).into(binding.avatar)
             binding.itemRow.setOnClickListener {
                 onClickInterface.onItemClick(adapterPosition)
             }

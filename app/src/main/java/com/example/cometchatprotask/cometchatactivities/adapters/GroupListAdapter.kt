@@ -24,7 +24,7 @@ class GroupListAdapter(private val onClickInterface: OnClickInterface) : ListAda
         }
         fun bind(current : Group,onClickInterface: OnClickInterface){
             binding.usersName.text = current.name
-            Glide.with(itemView).load(current.icon).into(binding.avatar)
+            Glide.with(itemView).load(current.icon).placeholder(R.drawable.user).into(binding.avatar)
             binding.itemRow.setOnClickListener {
                 onClickInterface.onItemClick(adapterPosition)
             }

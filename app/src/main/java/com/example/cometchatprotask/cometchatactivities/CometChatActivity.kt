@@ -7,21 +7,27 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.loader.app.LoaderManager
+import androidx.loader.content.Loader
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.cometchat.pro.core.CometChat
 import com.cometchat.pro.exceptions.CometChatException
+import com.cometchat.pro.models.BaseMessage
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.databinding.ActivityCometChatBinding
 import com.example.cometchatprotask.handler.toast
 import com.example.cometchatprotask.login.MainActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
 
-class CometChatActivity : AppCompatActivity(),View.OnClickListener {
+class CometChatActivity : AppCompatActivity(),View.OnClickListener,LoaderManager.LoaderCallbacks<BaseMessage>{
     lateinit var binding: ActivityCometChatBinding
     private  val TAG = "CometChatActivity"
+    var job = SupervisorJob()
+    var scope = CoroutineScope(Dispatchers.IO + job)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCometChatBinding.inflate(layoutInflater)
@@ -30,6 +36,7 @@ class CometChatActivity : AppCompatActivity(),View.OnClickListener {
             R.id.conversation,
             R.id.user,
             R.id.groups,
+            R.id.calls,
             R.id.profile
         ).build()
         var navController = findNavController(R.id.bottom_nav_fragment)
@@ -37,7 +44,32 @@ class CometChatActivity : AppCompatActivity(),View.OnClickListener {
         NavigationUI.setupWithNavController(binding.bottomNavBar,navController)
         val users = CometChat.getLoggedInUser()
         Log.e(TAG, "Show users: ${users.toString()}")
+       // Log.e(TAG, "onCreateBool: ${isOneOnOneEnabled()}")
     }
+
+/*     @ExperimentalCoroutinesApi
+      fun isOneOnOneEnabled(): Boolean {
+         val response = CompletableDeferred<Boolean>()
+         lit@ var v = scope.async {
+             isFeatureEnabled()
+         }
+
+     }
+
+    suspend fun isFeatureEnabled() : Boolean {
+        val response = CompletableDeferred<Boolean>()
+        CometChat.isFeatureEnabled("core.chat.one-on-one.enabled",object: CometChat.CallbackListener<Boolean>(){
+            override fun onSuccess(p0: Boolean?) {
+                if(p0 != null) response.complete(p0)
+            }
+            override fun onError(p0: CometChatException?) {
+
+            }
+        })
+        return response.await()
+    }*/
+
+
 
     override fun onClick(p0: View?) {
         when(p0?.id){
@@ -80,5 +112,18 @@ class CometChatActivity : AppCompatActivity(),View.OnClickListener {
     override fun onBackPressed() {
         finish()
     }
+
+    override fun onCreateLoader(id: Int, args: Bundle?): Loader<BaseMessage> {
+        TODO("Not yet implemented")
+    }
+
+    override fun onLoadFinished(loader: Loader<BaseMessage>, data: BaseMessage?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onLoaderReset(loader: Loader<BaseMessage>) {
+        TODO("Not yet implemented")
+    }
+
 
 }
