@@ -6,8 +6,14 @@ import com.cometchat.pro.exceptions.CometChatException
 import com.example.cometchatprotask.handler.toast
 import com.example.cometchatprotask.utils.Constants.Companion.appID
 import com.example.cometchatprotask.utils.Constants.Companion.appSettings
+import com.example.cometchatprotask.singleton.CallListener.addCallListener
+import com.example.cometchatprotask.singleton.CallListener.removeCallListener
 
 class Initializer : Application() {
+    
+    companion object{
+        private const val TAG = "Initializer"
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -21,5 +27,12 @@ class Initializer : Application() {
             }
 
         })
+        addCallListener(TAG,this)
     }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        removeCallListener(TAG)
+    }
+
 }

@@ -81,6 +81,7 @@ class Conversation : Fragment(),OnClickInterface {
                 bundle.putString("avatar",user.avatar)
                 bundle.putString("ruserid",user.uid)
                 bundle.putString("selfuid", uid.uid)
+                bundle.putString("type",conversation.conversationType)
             }
             CometChatConstants.CONVERSATION_TYPE_GROUP-> {
                 var group = conversation.conversationWith as Group
@@ -89,6 +90,7 @@ class Conversation : Fragment(),OnClickInterface {
                 bundle.putString("icon",group.icon)
                 bundle.putInt("members",group.membersCount)
                 bundle.putString("selfuid", uid.uid)
+                bundle.putString("type",conversation.conversationType)
             }
         }
         return bundle

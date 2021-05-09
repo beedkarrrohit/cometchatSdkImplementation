@@ -4,6 +4,8 @@ import android.content.Intent
 import android.inputmethodservice.KeyboardView
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -21,7 +23,9 @@ import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.adapters.UserChatScreenAdapter
 import com.example.cometchatprotask.databinding.ActivityChatScreenBinding
 import com.example.cometchatprotask.databinding.CreateTextMessageLayoutBinding
-import java.util.ArrayList
+import com.example.cometchatprotask.utils.Utils
+import kotlinx.coroutines.coroutineScope
+import java.util.*
 
 class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     lateinit var chatScreenBinding: ActivityChatScreenBinding
@@ -45,6 +49,7 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
 
     private fun setupFields(){
         chatScreenBinding.toolbarUserName.text = bundle.getString("name")
+        setEditTextListener()
         chatScreenBinding.toolbarStatus.text = bundle.getString("status")
         Glide.with(this).load(bundle.getString("avatar"))
                 .centerCrop().placeholder(R.drawable.user).into(chatScreenBinding.avatar)
@@ -84,13 +89,24 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
             }
             override fun onError(p0: CometChatException?) {
             }
-
         })
     }
 
     override fun onResume() {
         super.onResume()
         addMessageListener()
+        addUserListener()
+        var v1 = CometChat.isFeatureEnabled("core.chat.one-on-one.enabled",object: CometChat.CallbackListener<Boolean>(){
+            override fun onSuccess(p0: Boolean?) {
+
+            }
+
+            override fun onError(p0: CometChatException?) {
+                TODO("Not yet implemented")
+            }
+
+        })
+        Log.e(TAG, "onResume: $v1")
     }
 
     fun fetchMessage(){
@@ -134,18 +150,22 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     }
 
     fun cometChatCall(){
-        var recieverId = bundle.getString("ruserid")
-        val intent = Intent(this,CallingScreen::class.java)
+        var receiverId = bundle.getString("ruserid")
+        /*val intent = Intent(this,CallingScreen::class.java)
         intent.putExtra("rid",recieverId)
         intent.putExtra("type",CometChatConstants.RECEIVER_TYPE_USER)
         intent.putExtra("calltype",CometChatConstants.CALL_TYPE_AUDIO)
-        startActivity(intent)
+        startActivity(intent)*/
+        if(receiverId != null) Utils.initiateCall(this,receiverId,CometChatConstants.RECEIVER_TYPE_USER,CometChatConstants.CALL_TYPE_AUDIO)
     }
 
     private fun addMessageListener() {
         CometChat.addMessageListener(TAG,object: CometChat.MessageListener(){
             override fun onTextMessageReceived(p0: TextMessage?) {
                 super.onTextMessageReceived(p0)
+                var list = ArrayList(chatAdapter.currentList)
+                list.add(p0)
+                chatAdapter.submitList(list)
             }
 
             override fun onMediaMessageReceived(p0: MediaMessage?) {
@@ -158,14 +178,22 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
 
             override fun onTypingStarted(p0: TypingIndicator?) {
                 super.onTypingStarted(p0)
+                if(p0 != null){
+                    setTypingMessage(p0,true)
+                }
             }
 
             override fun onTypingEnded(p0: TypingIndicator?) {
                 super.onTypingEnded(p0)
+                if(p0 != null){
+                    setTypingMessage(p0,false)
+                }
+
             }
 
             override fun onMessagesDelivered(p0: MessageReceipt?) {
                 super.onMessagesDelivered(p0)
+
             }
 
             override fun onMessagesRead(p0: MessageReceipt?) {
@@ -183,13 +211,17 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     }
 
     private fun addUserListener(){
-        CometChat.addUserListener(TAG,object: CometChat.UserListener(){
+        CometChat.addUserListener(TAG, object : CometChat.UserListener() {
             override fun onUserOnline(p0: User?) {
                 super.onUserOnline(p0)
+                Log.e(TAG, "onUserOnline: ${p0?.status}")
+                chatScreenBinding.toolbarStatus.text = p0?.status
             }
 
             override fun onUserOffline(p0: User?) {
                 super.onUserOffline(p0)
+                Log.e(TAG, "onUserOffline: ${p0?.status}")
+                chatScreenBinding.toolbarStatus.text = p0?.status
             }
         })
     }
@@ -197,8 +229,59 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     private fun removemessageListener(){
         CometChat.removeMessageListener(TAG)
     }
+
+    private fun setEditTextListener(){
+        subBinding.edtMsg.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                if(p0!!.isNotEmpty()) sendTypingMessage(true) else sendTypingMessage(false)
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                val timer = Timer()
+                timer.schedule(object:TimerTask(){
+                    override fun run() {
+                        sendTypingMessage(false)
+                    }
+
+                },2000)
+            }
+
+        })
+    }
+
+    private fun sendTypingMessage(isTyping : Boolean){
+        var id = bundle.getString("ruserid")
+        if(isTyping){
+            if(bundle.getString("type") == CometChatConstants.CONVERSATION_TYPE_USER){
+                CometChat.startTyping(TypingIndicator(id!!,CometChatConstants.RECEIVER_TYPE_USER))
+            }
+        }else{
+            if(bundle.getString("type") == CometChatConstants.CONVERSATION_TYPE_USER){
+                CometChat.endTyping(TypingIndicator(id!!,CometChatConstants.RECEIVER_TYPE_USER))
+            }
+        }
+    }
+
+    private fun setTypingMessage(typingIndicator: TypingIndicator,isShow: Boolean){
+        val rid = bundle.getString("ruserid")
+        if(typingIndicator.receiverType.equals(CometChatConstants.RECEIVER_TYPE_USER,ignoreCase = true)){
+            if(rid != null && rid.equals(typingIndicator.sender.uid,ignoreCase = true)){
+                if(isShow){
+                    chatScreenBinding.toolbarStatus.text = "Typing...."
+                }else{
+                    chatScreenBinding.toolbarStatus.text = bundle.getString("status")
+                }
+            }
+        }
+    }
+
     override fun onPause() {
         super.onPause()
         removemessageListener()
+        CometChat.removeUserListener(TAG)
+        sendTypingMessage(false)
     }
 }

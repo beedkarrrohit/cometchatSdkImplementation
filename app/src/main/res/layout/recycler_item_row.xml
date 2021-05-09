@@ -43,7 +43,7 @@
         app:layout_constraintTop_toBottomOf="@id/usersName"
         app:layout_constraintVertical_bias="0.0"
         tools:text="status" />
-    <ImageView
+    <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/call_button"
@@ -52,6 +52,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginEnd="2dp"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:visibility="gone"
         />
     <TextView

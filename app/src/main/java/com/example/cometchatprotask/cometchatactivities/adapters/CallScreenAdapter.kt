@@ -15,6 +15,7 @@ import com.cometchat.pro.models.BaseMessage
 import com.cometchat.pro.models.User
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.databinding.RecyclerItemRowBinding
+import com.example.cometchatprotask.utils.CommonUtils
 
 class CallScreenAdapter : ListAdapter<BaseMessage,CallScreenAdapter.CallListViewHolder>(comparator) {
     private val TAG = "CallScreenAdapter"
@@ -31,6 +32,7 @@ class CallScreenAdapter : ListAdapter<BaseMessage,CallScreenAdapter.CallListView
         fun bind(current: BaseMessage){
             val call : Call = current as Call
             var status : String = ""
+            var time : String
             var isVideo : Boolean
             if(call.receiverType == CometChatConstants.RECEIVER_TYPE_USER){
                 if((call.callInitiator as User).uid == CometChat.getLoggedInUser().uid){
@@ -64,6 +66,9 @@ class CallScreenAdapter : ListAdapter<BaseMessage,CallScreenAdapter.CallListView
                 status = status + "Video Call"
             }
             binding.status.text = status
+            binding.callTime.visibility = View.VISIBLE
+            binding.callTime.text =  CommonUtils.getLastMessageDate(call.initiatedAt)
+            binding.callButton.visibility = View.VISIBLE
         }
     }
     companion object{
