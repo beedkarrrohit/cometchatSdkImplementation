@@ -1,5 +1,6 @@
 package com.example.cometchatprotask.cometchatactivities
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
@@ -37,6 +38,9 @@ class CallingScreen : AppCompatActivity(),View.OnClickListener {
         binding.endCall.setOnClickListener(this)
         binding.acceptCall.setOnClickListener(this)
         binding.rejectCall.setOnClickListener(this)
+        if (!Utils.hasPermissions(this, Manifest.permission.RECORD_AUDIO) && !Utils.hasPermissions(this, Manifest.permission.CAMERA)) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA), REQUEST_PERMISSION)
+        }
     }
 
     fun setUpIntent(){
@@ -132,5 +136,6 @@ class CallingScreen : AppCompatActivity(),View.OnClickListener {
         private  var name : String? = null
         private var avatar : String? = null
         private var uid : String? = null
+        private const val REQUEST_PERMISSION = 1
     }
 }

@@ -3,18 +3,23 @@ package com.example.cometchatprotask.utils
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import android.widget.RelativeLayout
+import androidx.core.app.ActivityCompat
 import com.cometchat.pro.core.Call
 import com.cometchat.pro.core.CallSettings
 import com.cometchat.pro.core.CometChat
 import com.cometchat.pro.exceptions.CometChatException
+import com.cometchat.pro.helpers.Logger
 import com.cometchat.pro.models.User
 import com.cometchat.pro.rtc.model.AudioMode
 import com.example.cometchatprotask.cometchatactivities.CallingScreen
 
 class Utils {
     companion object{
+        private const val TAG = "Utils"
         fun startCall(activity: Activity,callView : RelativeLayout,call: Call){
             val callSettings = CallSettings.CallSettingsBuilder(activity,callView).setSessionId(call.sessionId).build()
             CometChat.startCall(callSettings,object: CometChat.OngoingCallListener{
@@ -75,6 +80,20 @@ class Utils {
             }
 
             context.startActivity(intent)
+        }
+
+        fun hasPermissions(context: Context?, vararg permissions: String): Boolean {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+                for (permission in permissions) {
+                    Logger.error(TAG, " hasPermissions() : Permission : " + permission
+                            + "checkSelfPermission : " + ActivityCompat.checkSelfPermission(context, permission))
+                    if (ActivityCompat.checkSelfPermission(context, permission) !=
+                            PackageManager.PERMISSION_GRANTED) {
+                        return false
+                    }
+                }
+            }
+            return true
         }
 
 
