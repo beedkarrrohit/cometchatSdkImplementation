@@ -15,6 +15,8 @@ import com.cometchat.pro.models.BaseMessage
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.adapters.CallScreenAdapter
 import com.example.cometchatprotask.databinding.FragmentCallsBinding
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class calls : Fragment() {
@@ -36,7 +38,7 @@ class calls : Fragment() {
     fun fetchCallList(){
         Log.e(TAG, "onError fetchCallList: Fetching call list", )
         var messagesRequest: MessagesRequest
-        val limit = 30
+        val limit = 10
         val list = mutableListOf<String>(
             CometChatConstants.CATEGORY_CALL
         )
@@ -46,7 +48,8 @@ class calls : Fragment() {
             override fun onSuccess(p0: List<BaseMessage>?) {
                 Log.e(TAG, "onError onSuccess: $p0")
                 if (!p0.isNullOrEmpty()) {
-                    adapter.submitList(p0)
+                    Collections.reverse(p0)
+                    adapter.submitList(sortList(p0))
                 } else {
                     binding.noRecentCalls.visibility = View.VISIBLE
                 }
@@ -56,6 +59,20 @@ class calls : Fragment() {
                 Log.e(TAG, "onError: $p0",)
             }
         })
+    }
+
+    private fun sortList(list : List<BaseMessage>?) : List<BaseMessage>{
+        val sortedList = ArrayList<BaseMessage>()
+        for(baseMessage in list!!){
+            if((baseMessage as Call).callStatus == CometChatConstants.CALL_STATUS_REJECTED
+                    || baseMessage.callStatus == CometChatConstants.CALL_STATUS_CANCELLED
+                    || baseMessage.callStatus == CometChatConstants.CALL_STATUS_UNANSWERED
+                    || baseMessage.callStatus == CometChatConstants.CALL_STATUS_ENDED
+            ){
+                sortedList.add(baseMessage)
+            }
+        }
+        return sortedList
     }
 
 }

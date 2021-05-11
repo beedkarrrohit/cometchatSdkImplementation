@@ -1,38 +1,20 @@
 package com.example.cometchatprotask.cometchatactivities.adapters
 
+import android.content.Context
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cometchat.pro.constants.CometChatConstants
-import com.cometchat.pro.core.Call
 import com.cometchat.pro.core.CometChat
-import com.cometchat.pro.models.Action
 import com.cometchat.pro.models.BaseMessage
 import com.cometchat.pro.models.TextMessage
-import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.viewHolders.ActionViewHolder
-import com.example.cometchatprotask.cometchatactivities.viewHolders.BaseViewHolder
 import com.example.cometchatprotask.cometchatactivities.viewHolders.LeftMessageViewHolder
 import com.example.cometchatprotask.cometchatactivities.viewHolders.RightMessageViewHolder
 
-
-class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comparator) {
-    private val TAG = "UserChatScreenAdapter"
+class OneOnOneAdapter(context: Context , messageList: List<BaseMessage>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private val messageList : MutableList<BaseMessage> = ArrayList()
     companion object{
-        private var comparator = object : DiffUtil.ItemCallback<BaseMessage>(){
-            override fun areItemsTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
-                return oldItem.readAt == newItem.readAt
-            }
-
-            override fun areContentsTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
-                return oldItem == newItem
-            }
-
-        }
-        //message type Mesaage
         private val RIGHT_TEXT_MESSAGE = 1
         private val LEFT_TEXT_MESSAGE = 2
         private val RIGHT_IMAGE_MESSAGE = 3
@@ -47,63 +29,75 @@ class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(c
         private val LEFT_CUSTOM_MESSAGE=12
 
         //message type call
-        private val ACTION_CALL =13
+        private  val ACTION_CALL = 13
+        private val ACTION_AUDIO_CALL = 14
+        private val ACTION_VIDEO_CALL = 15
         //message type custom
     }
 
+    init {
+        submitList(messageList)
+    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        Log.e(TAG, "itemViewType $viewType" )
+
         return when(viewType){
-            RIGHT_TEXT_MESSAGE -> {
-                RightMessageViewHolder.create(parent)
+            RIGHT_TEXT_MESSAGE ->{
+                return RightMessageViewHolder.create(parent)
             }
-            LEFT_TEXT_MESSAGE -> {
-                LeftMessageViewHolder.create(parent)
+            LEFT_TEXT_MESSAGE->{
+                return LeftMessageViewHolder.create(parent)
             }
-            ACTION_CALL -> {
-                ActionViewHolder.create(parent)
-            }else -> ActionViewHolder.create(parent)
+            ACTION_CALL->{
+                return ActionViewHolder.create(parent)
+            }
+            else->{
+                return ActionViewHolder.create(parent)
+            }
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        val baseMessage = getItem(position)
-        Log.e(TAG, "onBindViewHolder: ${currentList[position]}", )
-        Log.e(TAG, "onBindViewHolder: ${baseMessage.deliveredAt}", )
+        val baseMessage = messageList[position]
         when(holder.itemViewType){
             RIGHT_TEXT_MESSAGE -> {
+                Log.e("uu", "onBindViewHolder: ${holder}" )
                 val rightMessageViewHolder = holder as RightMessageViewHolder
-                rightMessageViewHolder.bind(baseMessage as TextMessage)
-            }
-            LEFT_TEXT_MESSAGE ->{
+                rightMessageViewHolder.bind(baseMessage)
+            }LEFT_TEXT_MESSAGE->{
                 val leftMessageViewHolder = holder as LeftMessageViewHolder
-                leftMessageViewHolder.bind(baseMessage as TextMessage)
-            }
-            ACTION_CALL ->{
+                leftMessageViewHolder.bind(baseMessage)
+            }ACTION_CALL->{
                 val actionViewHolder = holder as ActionViewHolder
                 actionViewHolder.bind(baseMessage)
             }
         }
     }
 
-    override fun onCurrentListChanged(
-        previousList: MutableList<BaseMessage>,
-        currentList: MutableList<BaseMessage>
-    ) {
-        previousList == currentList
+    override fun getItemCount(): Int {
+        return messageList.size
     }
 
-
-    override fun getItemViewType(position: Int): Int {
-        return getItemViewTypes(position)
+    fun submitList(list : List<BaseMessage>){
+        this.messageList.addAll(0,list)
+        notifyItemRangeInserted(0,list.size)
     }
 
-    fun getItemViewTypes(position: Int) : Int  {
-        val message = getItem(position)
+    fun updateList(list : List<BaseMessage>){
+        submitList(list)
+    }
+
+    fun getItemTypes(position: Int) : Int {
+        val message = messageList[position]
         return when(message.category){
             CometChatConstants.CATEGORY_MESSAGE->{
                 when(message.type){
-                    CometChatConstants.MESSAGE_TYPE_TEXT-> return if(message.sender.uid ==  CometChat.getLoggedInUser().uid) RIGHT_TEXT_MESSAGE else LEFT_TEXT_MESSAGE
+                    CometChatConstants.MESSAGE_TYPE_TEXT->{
+                        if(message.sender.uid == CometChat.getLoggedInUser().uid){
+                            return RIGHT_TEXT_MESSAGE
+                        }else {
+                            return LEFT_TEXT_MESSAGE
+                        }
+                    }
                     /*CometChatConstants.MESSAGE_TYPE_IMAGE->{}
                     CometChatConstants.MESSAGE_TYPE_VIDEO->{}
                     CometChatConstants.MESSAGE_TYPE_FILE->{}
@@ -114,15 +108,13 @@ class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(c
             }
             //CometChatConstants.CATEGORY_CUSTOM->{}
             CometChatConstants.CATEGORY_CALL->{
-                return ACTION_CALL
-            }else-> -1
+               return ACTION_CALL
+            }
+            else -> -1
         }
-
     }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
+    override fun getItemViewType(position: Int): Int {
+        return getItemTypes(position)
     }
-
-
 }

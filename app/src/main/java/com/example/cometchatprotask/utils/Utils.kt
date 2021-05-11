@@ -8,11 +8,13 @@ import android.os.Build
 import android.util.Log
 import android.widget.RelativeLayout
 import androidx.core.app.ActivityCompat
+import com.cometchat.pro.constants.CometChatConstants
 import com.cometchat.pro.core.Call
 import com.cometchat.pro.core.CallSettings
 import com.cometchat.pro.core.CometChat
 import com.cometchat.pro.exceptions.CometChatException
 import com.cometchat.pro.helpers.Logger
+import com.cometchat.pro.models.Group
 import com.cometchat.pro.models.User
 import com.cometchat.pro.rtc.model.AudioMode
 import com.example.cometchatprotask.cometchatactivities.CallingScreen
@@ -55,7 +57,13 @@ class Utils {
             CometChat.initiateCall(call, object : CometChat.CallbackListener<Call>() {
                 override fun onSuccess(p0: Call?) {
                     Log.e("TAG", "onSuccessss: ${p0?.sessionId}" )
-                    if (p0 != null) startCallIntent(context, p0.callReceiver as User, p0.type, true, p0.sessionId)
+                    if (p0 != null){
+                        if(receiverType == CometChatConstants.RECEIVER_TYPE_USER){
+                            startCallIntent(context, p0.callReceiver as User, p0.type, true, p0.sessionId)
+                        }else if(receiverType == CometChatConstants.RECEIVER_TYPE_GROUP){
+                            startGroupCallIntent(context,p0.callReceiver as Group,p0.type,true,p0.sessionId)
+                        }
+                    }
                 }
 
                 override fun onError(p0: CometChatException?) {
@@ -78,8 +86,19 @@ class Utils {
             }else{
                 intent.type = "incoming"
             }
-
             context.startActivity(intent)
+        }
+
+        fun startGroupCallIntent(context:Context, group : Group,type: String,isOutgoing: Boolean, sessionId : String){
+            val groupIntent = Intent(context,CallingScreen::class.java)
+            groupIntent.putExtra("name",group.name)
+            groupIntent.putExtra("uid",group.guid)
+            groupIntent.putExtra("avatar",group.icon)
+            groupIntent.putExtra("sessionId",sessionId)
+            groupIntent.action = type
+            groupIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            if(isOutgoing) groupIntent.type = "outgoing" else groupIntent.type = "incoming"
+            context.startActivity(groupIntent)
         }
 
         fun hasPermissions(context: Context?, vararg permissions: String): Boolean {

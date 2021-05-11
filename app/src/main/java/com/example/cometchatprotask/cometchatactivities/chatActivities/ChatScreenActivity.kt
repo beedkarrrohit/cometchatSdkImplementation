@@ -1,7 +1,5 @@
-package com.example.cometchatprotask.cometchatactivities
+package com.example.cometchatprotask.cometchatactivities.chatActivities
 
-import android.content.Intent
-import android.inputmethodservice.KeyboardView
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -10,21 +8,21 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toolbar
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.cometchat.pro.constants.CometChatConstants
 import com.cometchat.pro.core.CometChat
+import com.cometchat.pro.core.CometChat.*
 import com.cometchat.pro.core.MessagesRequest
 import com.cometchat.pro.exceptions.CometChatException
 import com.cometchat.pro.models.*
 import com.cometchat.pro.models.User
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.adapters.UserChatScreenAdapter
+import com.example.cometchatprotask.cometchatactivities.viewModels.ChatScreenViewModel
 import com.example.cometchatprotask.databinding.ActivityChatScreenBinding
 import com.example.cometchatprotask.databinding.CreateTextMessageLayoutBinding
 import com.example.cometchatprotask.utils.Utils
-import kotlinx.coroutines.coroutineScope
 import java.util.*
 
 class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
@@ -33,6 +31,7 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     private  val TAG = "ChatScreenActivity"
     lateinit var bundle : Bundle
     lateinit var chatAdapter : UserChatScreenAdapter
+    lateinit var viewModel : ChatScreenViewModel
     val list : MutableList<BaseMessage> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +42,16 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
         bundle = intent.extras!!
+        viewModel = ViewModelProvider(this).get(ChatScreenViewModel::class.java)
         setupFields()
         fetchMessage()
+        viewModel.getMessageList().observe(this, {
+            Log.e(TAG, "onCreateListObserver1: ${it[it.size-1]}" )
+            chatAdapter.submitList(it.toMutableList())
+            chatAdapter.notifyDataSetChanged()
+            if(chatAdapter.itemCount > 5) chatScreenBinding.chatscreenRecycler.scrollToPosition(chatAdapter.itemCount -1)
+            Log.e(TAG, "onCreateListObserver2: ${it[it.size-1]}" )
+        })
     }
 
     private fun setupFields(){
@@ -56,13 +63,7 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         subBinding.sendBtn.setOnClickListener(this)
         chatAdapter = UserChatScreenAdapter()
         chatScreenBinding.chatscreenRecycler.adapter = chatAdapter
-        chatScreenBinding.chatscreenRecycler.addOnLayoutChangeListener(object : View.OnLayoutChangeListener{
-            override fun onLayoutChange(p0: View?, p1: Int, p2: Int, p3: Int, p4: Int, p5: Int, p6: Int, p7: Int, p8: Int) {
-                if(p4 < p8){
-                    //chatScreenBinding.chatscreenRecycler.smoothScrollToPosition(chatAdapter.itemCount-1)
-                }
-            }
-        })
+
     }
 
     override fun onClick(p0: View?) {
@@ -77,15 +78,11 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     }
 
     fun sendMessage(baseMessage: BaseMessage){
-        CometChat.sendMessage(baseMessage as TextMessage, object : CometChat.CallbackListener<TextMessage>() {
+        sendMessage(baseMessage as TextMessage, object : CometChat.CallbackListener<TextMessage>() {
             override fun onSuccess(p0: TextMessage?) {
                 var baseMessage = p0 as BaseMessage
-                list.add(baseMessage)
-                Log.e(TAG, "BaseMessage $baseMessage")
-                var li: MutableList<BaseMessage> = ArrayList(chatAdapter.currentList)
-                li.add(baseMessage)
-                chatAdapter.submitList(li)
-                if(chatAdapter.itemCount - 1 - (chatScreenBinding.chatscreenRecycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() < 5) scrollToBottom()
+                viewModel.addMessage(baseMessage)
+                //if(chatAdapter.itemCount - 1 - (chatScreenBinding.chatscreenRecycler.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() < 5) scrollToBottom()
             }
             override fun onError(p0: CometChatException?) {
             }
@@ -96,36 +93,11 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         super.onResume()
         addMessageListener()
         addUserListener()
-        var v1 = CometChat.isFeatureEnabled("core.chat.one-on-one.enabled",object: CometChat.CallbackListener<Boolean>(){
-            override fun onSuccess(p0: Boolean?) {
-
-            }
-
-            override fun onError(p0: CometChatException?) {
-                TODO("Not yet implemented")
-            }
-
-        })
-        Log.e(TAG, "onResume: $v1")
     }
 
     fun fetchMessage(){
-        var messagesRequest: MessagesRequest?
-        val limit = 30
         val uid = bundle.getString("ruserid")
-        messagesRequest= MessagesRequest.MessagesRequestBuilder().setUID(uid!!).setLimit(limit).build()
-        messagesRequest?.fetchPrevious(object : CometChat.CallbackListener<List<BaseMessage>>() {
-            override fun onSuccess(p0: List<BaseMessage>?) {
-                Log.e(TAG, "submitListN: $p0")
-                chatAdapter.submitList(p0 as MutableList<BaseMessage>)
-                //scrollToBottom()
-            }
-
-            override fun onError(p0: CometChatException?) {
-                TODO("Not yet implemented")
-            }
-
-        })
+        viewModel.fetchMessage(uid)
     }
 
     private fun scrollToBottom(){
@@ -144,28 +116,22 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
-            R.id.call -> cometChatCall()
+            R.id.call -> cometChatCall(CometChatConstants.CALL_TYPE_AUDIO)
+            R.id.video_call -> cometChatCall(CometChatConstants.CALL_TYPE_VIDEO)
         }
         return true
     }
 
-    fun cometChatCall(){
+    fun cometChatCall(calltype : String){
         var receiverId = bundle.getString("ruserid")
-        /*val intent = Intent(this,CallingScreen::class.java)
-        intent.putExtra("rid",recieverId)
-        intent.putExtra("type",CometChatConstants.RECEIVER_TYPE_USER)
-        intent.putExtra("calltype",CometChatConstants.CALL_TYPE_AUDIO)
-        startActivity(intent)*/
-        if(receiverId != null) Utils.initiateCall(this,receiverId,CometChatConstants.RECEIVER_TYPE_USER,CometChatConstants.CALL_TYPE_AUDIO)
+        if(receiverId != null) Utils.initiateCall(this,receiverId,CometChatConstants.RECEIVER_TYPE_USER,calltype)
     }
 
     private fun addMessageListener() {
-        CometChat.addMessageListener(TAG,object: CometChat.MessageListener(){
+        addMessageListener(TAG, object : CometChat.MessageListener() {
             override fun onTextMessageReceived(p0: TextMessage?) {
-                super.onTextMessageReceived(p0)
-                var list = ArrayList(chatAdapter.currentList)
-                list.add(p0)
-                chatAdapter.submitList(list)
+               if (p0 != null)
+                   viewModel.addMessage(p0)
             }
 
             override fun onMediaMessageReceived(p0: MediaMessage?) {
@@ -178,26 +144,31 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
 
             override fun onTypingStarted(p0: TypingIndicator?) {
                 super.onTypingStarted(p0)
-                if(p0 != null){
-                    setTypingMessage(p0,true)
+                if (p0 != null) {
+                    setTypingMessage(p0, true)
                 }
             }
 
             override fun onTypingEnded(p0: TypingIndicator?) {
                 super.onTypingEnded(p0)
-                if(p0 != null){
-                    setTypingMessage(p0,false)
+                if (p0 != null) {
+                    setTypingMessage(p0, false)
                 }
 
             }
 
             override fun onMessagesDelivered(p0: MessageReceipt?) {
                 super.onMessagesDelivered(p0)
-
+                Log.e(TAG, "onMessagesDelivered: $p0", )
+                if (p0 != null) {
+                    viewModel.setDeliveryReceipt(p0)
+                }
             }
 
             override fun onMessagesRead(p0: MessageReceipt?) {
                 super.onMessagesRead(p0)
+                Log.e(TAG, "onMessagesDeliveredRead: $p0", )
+                if (p0 != null) viewModel.setReadReceipts(p0)
             }
 
             override fun onMessageEdited(p0: BaseMessage?) {
@@ -211,7 +182,7 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     }
 
     private fun addUserListener(){
-        CometChat.addUserListener(TAG, object : CometChat.UserListener() {
+        addUserListener(TAG, object : CometChat.UserListener() {
             override fun onUserOnline(p0: User?) {
                 super.onUserOnline(p0)
                 Log.e(TAG, "onUserOnline: ${p0?.status}")
@@ -227,7 +198,7 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     }
 
     private fun removemessageListener(){
-        CometChat.removeMessageListener(TAG)
+        removeMessageListener(TAG)
     }
 
     private fun setEditTextListener(){
@@ -256,11 +227,11 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         var id = bundle.getString("ruserid")
         if(isTyping){
             if(bundle.getString("type") == CometChatConstants.CONVERSATION_TYPE_USER){
-                CometChat.startTyping(TypingIndicator(id!!,CometChatConstants.RECEIVER_TYPE_USER))
+                startTyping(TypingIndicator(id!!,CometChatConstants.RECEIVER_TYPE_USER))
             }
         }else{
             if(bundle.getString("type") == CometChatConstants.CONVERSATION_TYPE_USER){
-                CometChat.endTyping(TypingIndicator(id!!,CometChatConstants.RECEIVER_TYPE_USER))
+                endTyping(TypingIndicator(id!!,CometChatConstants.RECEIVER_TYPE_USER))
             }
         }
     }
@@ -277,11 +248,37 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
             }
         }
     }
+    private fun setDeliveryReceipt(messageReceipt: MessageReceipt){
+        val list = chatAdapter.currentList
+        Log.e(TAG, "onMessagesDeliveredRRR: ${list[list.size-1]}", )
+        for (i in list.indices.reversed()) {
+            val baseMessage = list[i]
+            if (baseMessage.deliveredAt == 0L) {
+                val index = list.indexOf(baseMessage)
+                Log.e(TAG, "onMessagesDelivered: ${list[index].deliveredAt}", )
+                list[index].deliveredAt = messageReceipt.deliveredAt
+                Log.e(TAG, "onMessagesDelivered: ${list[index].deliveredAt}", )
+            }
+        }
+        Log.e(TAG, "onMessagesDeliveredRRR: ${list[list.size-1]}", )
+        chatAdapter.submitList(list)
+    }
+
+    private fun setReadReceipt(messageReceipt: MessageReceipt){
+        val list= chatAdapter.currentList
+        for(i in list.indices.reversed()){
+            val baseMessage = list[i]
+            if(baseMessage.readAt == 0L){
+                val index = list.indexOf(baseMessage)
+                list[index].readAt = messageReceipt.readAt
+            }
+        }
+    }
 
     override fun onPause() {
         super.onPause()
         removemessageListener()
-        CometChat.removeUserListener(TAG)
+        removeUserListener(TAG)
         sendTypingMessage(false)
     }
 }

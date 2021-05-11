@@ -4,6 +4,7 @@ import android.content.Context
 import com.cometchat.pro.constants.CometChatConstants
 import com.cometchat.pro.core.Call
 import com.cometchat.pro.core.CometChat
+import com.cometchat.pro.models.Group
 import com.cometchat.pro.models.User
 import com.example.cometchatprotask.cometchatactivities.CallingScreen
 import com.example.cometchatprotask.utils.Utils
@@ -15,6 +16,8 @@ object CallListener {
                 if(p0 != null){
                     if(p0.receiverType == CometChatConstants.RECEIVER_TYPE_USER){
                         Utils.startCallIntent(context,p0.callInitiator as User,p0.type,false,p0.sessionId)
+                    }else if(p0.receiverType == CometChatConstants.RECEIVER_TYPE_GROUP){
+                        Utils.startGroupCallIntent(context,p0.receiver as Group,p0.type,false,p0.sessionId)
                     }
                 }
             }

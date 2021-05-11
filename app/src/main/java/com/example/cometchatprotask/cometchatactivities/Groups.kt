@@ -17,9 +17,9 @@ import com.cometchat.pro.models.Group
 import com.cometchat.pro.models.User
 import com.example.cometchatprotask.cometchatactivities.adapters.GroupListAdapter
 import com.example.cometchatprotask.cometchatactivities.adapters.OnClickInterface
+import com.example.cometchatprotask.cometchatactivities.chatActivities.GroupChatScreenActivity
 import com.example.cometchatprotask.databinding.FragmentGroupsBinding
 import com.example.cometchatprotask.databinding.RecyclerBinding
-import com.example.cometchatprotask.handler.toast
 
 class Groups : Fragment(),OnClickInterface {
     lateinit var binding : FragmentGroupsBinding
@@ -58,7 +58,7 @@ class Groups : Fragment(),OnClickInterface {
         var group = groupListAdapter.currentList[position]
         Log.e(TAG, "onItemClickG: $group")
         if(group.isJoined){
-            val intent = Intent(activity,GroupChatScreenActivity::class.java)
+            val intent = Intent(activity, GroupChatScreenActivity::class.java)
             intent.putExtras(createIntentBundle(group))
             startActivity(intent)
         }else{
@@ -100,7 +100,7 @@ class Groups : Fragment(),OnClickInterface {
             override fun onSuccess(p0: Group?) {
                 Log.e(TAG, "onJoinGroupSuccess: $p0")
                 binding.groupProgress.visibility = View.GONE
-                var intent = Intent(activity,GroupChatScreenActivity::class.java)
+                var intent = Intent(activity, GroupChatScreenActivity::class.java)
                 intent.putExtras(createIntentBundle(p0!!))
                 startActivity(intent)
             }

@@ -15,15 +15,13 @@ import com.example.cometchatprotask.R
 import com.example.cometchatprotask.databinding.FragmentConversationBinding
 import com.example.cometchatprotask.databinding.RecyclerItemRowBinding
 
-class ConversationListAdapter(private val onClickInterface: OnClickInterface) : ListAdapter<Conversation,ConversationListAdapter.ConversationViewHolder>(comparator){
+class ConversationListAdapter(private val onClickInterface: OnClickInterface) : ListAdapter<Conversation, ConversationListAdapter.ConversationViewHolder>(comparator){
     class ConversationViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
         private val TAG = "ConversationListAdapter"
-
+        val binding = RecyclerItemRowBinding.bind(itemView)
         companion object{
-            lateinit var binding:RecyclerItemRowBinding
             fun create(parent: ViewGroup): ConversationViewHolder{
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item_row,parent,false)
-                binding = RecyclerItemRowBinding.bind(view)
                 return ConversationViewHolder(view)
             }
         }
@@ -48,8 +46,8 @@ class ConversationListAdapter(private val onClickInterface: OnClickInterface) : 
                             }
                         }CometChatConstants.CATEGORY_CALL ->{
                             when(conversation.lastMessage.type){
-                                CometChatConstants.CALL_TYPE_AUDIO->{}
-                                CometChatConstants.CALL_TYPE_VIDEO->{}
+                                CometChatConstants.CALL_TYPE_AUDIO->binding.status.text =(conversation.lastMessage as Call).callStatus
+                                CometChatConstants.CALL_TYPE_VIDEO->binding.status.text =(conversation.lastMessage as Call).callStatus
                             }
                         }CometChatConstants.CATEGORY_CUSTOM->{}
                         }
@@ -73,8 +71,8 @@ class ConversationListAdapter(private val onClickInterface: OnClickInterface) : 
                             }
                         }CometChatConstants.CATEGORY_CALL ->{
                         when(conversation.lastMessage.type){
-                            CometChatConstants.CALL_TYPE_AUDIO->{binding.status.text =(conversation.lastMessage as Call).callStatus}
-                            CometChatConstants.CALL_TYPE_VIDEO->{}
+                            CometChatConstants.CALL_TYPE_AUDIO->binding.status.text =(conversation.lastMessage as Call).callStatus
+                            CometChatConstants.CALL_TYPE_VIDEO->binding.status.text =(conversation.lastMessage as Call).callStatus
                         }
                     }CometChatConstants.CATEGORY_CUSTOM->{}
                     }
@@ -109,4 +107,5 @@ class ConversationListAdapter(private val onClickInterface: OnClickInterface) : 
     override fun onBindViewHolder(holder: ConversationViewHolder, position: Int) {
         holder.bind(getItem(position),onClickInterface)
     }
+
 }

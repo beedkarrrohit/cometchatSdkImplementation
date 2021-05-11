@@ -32,7 +32,6 @@ class CallingScreen : AppCompatActivity(),View.OnClickListener {
         setUpIntent()
         setup()
         setupView()
-        //initiateCall()
     }
     fun setup(){
         binding.endCall.setOnClickListener(this)
@@ -69,23 +68,6 @@ class CallingScreen : AppCompatActivity(),View.OnClickListener {
             Glide.with(this).load(avatar).placeholder(R.drawable.user).into(binding.callingAvatar)
         }
     }
-
-    /*fun initiateCall(){
-        val uid = intent.getStringExtra("rid")
-        val calltype = intent.getStringExtra("calltype")
-        val usertype = intent.getStringExtra("type")
-        val call = Call(uid!!,usertype,calltype)
-        CometChat.initiateCall(call, object : CometChat.CallbackListener<Call>() {
-            override fun onSuccess(p0: Call?) {
-                Log.e(TAG, "onSuccessCall: $p0")
-            }
-
-            override fun onError(p0: CometChatException?) {
-
-            }
-
-        })
-    }*/
 
     override fun onClick(p0: View?) {
         Log.e(TAG, "onClickk: $sessionId", )

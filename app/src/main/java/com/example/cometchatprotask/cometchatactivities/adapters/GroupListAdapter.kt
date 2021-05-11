@@ -1,5 +1,6 @@
 package com.example.cometchatprotask.cometchatactivities.adapters
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,17 +15,17 @@ import com.example.cometchatprotask.databinding.RecyclerItemRowBinding
 
 class GroupListAdapter(private val onClickInterface: OnClickInterface) : ListAdapter<Group,GroupListAdapter.GroupViewHolder>(comparator) {
     class GroupViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
+        val binding = RecyclerItemRowBinding.bind(itemView)
         companion object{
-            lateinit var binding: RecyclerItemRowBinding
              fun create(parent : ViewGroup) : GroupViewHolder{
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item_row,parent,false)
-                binding = RecyclerItemRowBinding.bind(view)
-                return GroupViewHolder(binding.root)
+                return GroupViewHolder(view)
             }
         }
-        fun bind(current : Group,onClickInterface: OnClickInterface){
+        fun bind(current : Group, onClickInterface: OnClickInterface){
             binding.usersName.text = current.name
             Glide.with(itemView).load(current.icon).placeholder(R.drawable.user).into(binding.avatar)
+            binding.status.text = "Members: ${current.membersCount}"
             binding.itemRow.setOnClickListener {
                 onClickInterface.onItemClick(adapterPosition)
             }

@@ -12,10 +12,10 @@
         android:theme="@style/Theme.CometChatProtask">
         <activity android:name=".cometchatactivities.CallingScreen"></activity>
         <activity
-            android:name=".cometchatactivities.GroupChatScreenActivity"
+            android:name=".cometchatactivities.chatActivities.GroupChatScreenActivity"
             android:theme="@style/Theme.SplashTheme" />
         <activity
-            android:name=".cometchatactivities.ChatScreenActivity"
+            android:name=".cometchatactivities.chatActivities.ChatScreenActivity"
             android:theme="@style/Theme.SplashTheme"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".cometchatactivities.CometChatActivity" />

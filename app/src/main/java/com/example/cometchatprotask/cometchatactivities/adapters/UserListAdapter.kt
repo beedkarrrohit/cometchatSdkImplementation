@@ -15,12 +15,10 @@ import com.example.cometchatprotask.databinding.RecyclerItemRowBinding
 class UserListAdapter(private val onClickInterface: OnClickInterface) : ListAdapter<User,UserListAdapter.UserViewHOlder>(comparator) {
 
     class UserViewHOlder(itemView : View) : RecyclerView.ViewHolder(itemView){
-
+        val binding = RecyclerItemRowBinding.bind(itemView)
         companion object{
-            lateinit var binding : RecyclerItemRowBinding
             fun create(parent: ViewGroup) : UserViewHOlder{
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_item_row,parent,false)
-                binding = RecyclerItemRowBinding.bind(view)
                 return UserViewHOlder(view)
             }
         }

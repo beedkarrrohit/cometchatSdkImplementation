@@ -1,4 +1,4 @@
-package com.example.cometchatprotask.cometchatactivities
+package com.example.cometchatprotask.cometchatactivities.chatActivities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -7,26 +7,27 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.cometchat.pro.constants.CometChatConstants
 import com.cometchat.pro.core.CometChat
 import com.cometchat.pro.core.MessagesRequest
 import com.cometchat.pro.exceptions.CometChatException
-import com.cometchat.pro.models.BaseMessage
-import com.cometchat.pro.models.CustomMessage
-import com.cometchat.pro.models.MediaMessage
-import com.cometchat.pro.models.TextMessage
+import com.cometchat.pro.models.*
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.adapters.GroupMessageAdapter
+import com.example.cometchatprotask.cometchatactivities.viewModels.GroupChatScreenViewModel
 import com.example.cometchatprotask.databinding.ActivityGroupChatScreenBinding
 import com.example.cometchatprotask.databinding.CreateTextMessageLayoutBinding
 import com.example.cometchatprotask.handler.toast
+import com.example.cometchatprotask.utils.Utils
 
 class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     lateinit var binding : ActivityGroupChatScreenBinding
     lateinit var subBinding : CreateTextMessageLayoutBinding
     lateinit var bundle: Bundle
     lateinit var adapter: GroupMessageAdapter
+    lateinit var viewModel : GroupChatScreenViewModel
     private  val TAG = "GroupChatScreenActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +38,13 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
         bundle = intent.extras!!
+        viewModel = ViewModelProvider(this).get(GroupChatScreenViewModel::class.java)
         setupFields()
+        fetchMessage()
+        viewModel.getMessageList().observe(this,{
+            adapter.submitList(it)
+            if(adapter.itemCount > 5)binding.groupRecy.scrollToPosition(adapter.itemCount -1)
+        })
     }
 
     private fun setupFields() {
@@ -51,12 +58,9 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
 
     override fun onResume() {
         super.onResume()
-        fetchMessage()
         CometChat.addMessageListener(TAG,object : CometChat.MessageListener(){
             override fun onTextMessageReceived(p0: TextMessage?) {
-                var list = ArrayList(adapter.currentList)
-                list.add(p0)
-                adapter.submitList(list)
+                if(p0 != null) viewModel.addMessage(p0)
             }
 
             override fun onMediaMessageReceived(p0: MediaMessage?) {
@@ -65,6 +69,30 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
 
             override fun onCustomMessageReceived(p0: CustomMessage?) {
                 super.onCustomMessageReceived(p0)
+            }
+
+            override fun onTypingStarted(p0: TypingIndicator?) {
+                super.onTypingStarted(p0)
+            }
+
+            override fun onTypingEnded(p0: TypingIndicator?) {
+                super.onTypingEnded(p0)
+            }
+
+            override fun onMessagesDelivered(p0: MessageReceipt?) {
+                super.onMessagesDelivered(p0)
+            }
+
+            override fun onMessagesRead(p0: MessageReceipt?) {
+                super.onMessagesRead(p0)
+            }
+
+            override fun onMessageEdited(p0: BaseMessage?) {
+                super.onMessageEdited(p0)
+            }
+
+            override fun onMessageDeleted(p0: BaseMessage?) {
+                super.onMessageDeleted(p0)
             }
         })
     }
@@ -76,7 +104,9 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
 
     private fun fetchMessage(){
         val limit =20
-        var messageRequest = MessagesRequest.MessagesRequestBuilder().setGUID(bundle.getString("guid")!!).setLimit(limit).build()
+        val guid = bundle.getString("guid")
+        viewModel.fetchMessage(guid)
+        /*var messageRequest = MessagesRequest.MessagesRequestBuilder().setGUID(bundle.getString("guid")!!).setLimit(limit).build()
         messageRequest.fetchPrevious(object : CometChat.CallbackListener<List<BaseMessage>>() {
             override fun onSuccess(p0: List<BaseMessage>?) {
                 Log.e(TAG, "onSuccessGroupMess: $p0" )
@@ -86,7 +116,7 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
             override fun onError(p0: CometChatException?) {
             }
 
-        })
+        })*/
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -94,13 +124,15 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
-        R.id.leave ->{
-            leaveGroup()
+    override fun onOptionsItemSelected(item: MenuItem): Boolean{
+        when(item.itemId) {
+             R.id.leave -> {
+                leaveGroup()
+            }
+            R.id.video_call_group -> cometChatGroupCall(CometChatConstants.CALL_TYPE_VIDEO)
+            R.id.group_call -> cometChatGroupCall(CometChatConstants.CALL_TYPE_AUDIO)
         }
-        else ->{
-            super.onOptionsItemSelected(item)
-        }
+        return true
     }
 
     private fun leaveGroup() : Boolean{
@@ -137,9 +169,7 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         var textMessage = TextMessage(GUID!!,message,receiverType)
         CometChat.sendMessage(textMessage, object : CometChat.CallbackListener<TextMessage>() {
             override fun onSuccess(p0: TextMessage?) {
-                var list = ArrayList(adapter.currentList)
-                list.add(p0)
-                adapter.submitList(list)
+                if(p0 !=null) viewModel.addMessage(p0)
             }
 
             override fun onError(p0: CometChatException?) {
@@ -150,6 +180,11 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     }
     private fun checkInput(message:String):Boolean{
         return !(TextUtils.isEmpty(message))
+    }
+
+    private fun cometChatGroupCall(callType : String?){
+        val groupId = bundle.getString("guid")
+        if(groupId != null) Utils.initiateCall(this,groupId,CometChatConstants.RECEIVER_TYPE_GROUP,callType)
     }
 
 

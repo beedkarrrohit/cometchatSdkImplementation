@@ -7,13 +7,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.cometchat.pro.constants.CometChatConstants
 import com.cometchat.pro.core.CometChat
 import com.cometchat.pro.core.UsersRequest
 import com.cometchat.pro.exceptions.CometChatException
 import com.cometchat.pro.models.User
 import com.example.cometchatprotask.cometchatactivities.adapters.OnClickInterface
 import com.example.cometchatprotask.cometchatactivities.adapters.UserListAdapter
+import com.example.cometchatprotask.cometchatactivities.chatActivities.ChatScreenActivity
 import com.example.cometchatprotask.databinding.FragmentUserBinding
 import com.example.cometchatprotask.databinding.RecyclerBinding
 import com.example.cometchatprotask.handler.toast

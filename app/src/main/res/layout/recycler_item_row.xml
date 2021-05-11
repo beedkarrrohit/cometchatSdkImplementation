@@ -36,6 +36,7 @@
         android:id="@+id/status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.01"
@@ -43,17 +44,19 @@
         app:layout_constraintTop_toBottomOf="@id/usersName"
         app:layout_constraintVertical_bias="0.0"
         tools:text="status" />
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="30dp"
         android:id="@+id/call_button"
         android:src="@drawable/ic_round_call_24"
         app:layout_constraintEnd_toStartOf="@id/guideline2"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginEnd="2dp"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:visibility="gone"
+        android:foreground="?attr/selectableItemBackground"
+        app:tint="@color/teal_200"
+        app:layout_constraintVertical_bias="0.6"
         />
     <TextView
         android:layout_width="wrap_content"
@@ -62,11 +65,11 @@
         app:layout_constraintEnd_toStartOf="@id/call_button"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginEnd="25dp"
+        android:layout_marginEnd="10dp"
         tools:text="time"
-        android:visibility="gone"
+        app:layout_constraintVertical_bias="0.8"
+        android:visibility="visible"
         />
-
     <View
         android:layout_width="0dp"
         android:layout_height="1dp"
