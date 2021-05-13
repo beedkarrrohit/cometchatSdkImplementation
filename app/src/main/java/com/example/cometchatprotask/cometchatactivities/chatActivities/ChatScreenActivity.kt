@@ -1,7 +1,10 @@
 package com.example.cometchatprotask.cometchatactivities.chatActivities
 
+import android.content.Intent
+import android.Manifest.permission
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -11,6 +14,7 @@ import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.cometchat.pro.constants.CometChatConstants
+import com.cometchat.pro.core.Call
 import com.cometchat.pro.core.CometChat
 import com.cometchat.pro.core.CometChat.*
 import com.cometchat.pro.core.MessagesRequest
@@ -25,6 +29,7 @@ import com.example.cometchatprotask.databinding.ActivityChatScreenBinding
 import com.example.cometchatprotask.databinding.CreateTextMessageLayoutBinding
 import com.example.cometchatprotask.handler.toast
 import com.example.cometchatprotask.utils.Utils
+import java.io.File
 import java.util.*
 
 class ChatScreenActivity : AppCompatActivity(),View.OnClickListener,AttachBottomSheet.BottomSheetListener {
@@ -82,7 +87,12 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener,AttachBottom
                 sendMessage(textMessage)
             }
             R.id.button_attach ->{
-                attachBottomSheet.show(supportFragmentManager,TAG)
+                if(!Utils.hasPermissions(this,permission.READ_EXTERNAL_STORAGE) && !Utils.hasPermissions(this,permission.WRITE_EXTERNAL_STORAGE)){
+                    requestPermissions(arrayOf(permission.WRITE_EXTERNAL_STORAGE,permission.READ_EXTERNAL_STORAGE),100)
+                }else{
+                    attachBottomSheet.show(supportFragmentManager,TAG)
+                }
+
             }
         }
     }
@@ -292,7 +302,52 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener,AttachBottom
         sendTypingMessage(false)
     }
 
-    override fun onButtonClicked(s: String) {
-        this.toast(s)
+    override fun onButtonClicked(s: Int) {
+        when(s){
+            R.id.send_image ->{
+                this.toast("send Image")
+                val selectImageIntent = Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                startActivityForResult(selectImageIntent,1)
+            }
+        }
+
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == 1 && resultCode == RESULT_OK && data != null){
+            val selectedImage = data.data
+            Log.e(TAG, "onActivityResult: $selectedImage")
+            val cursor = selectedImage?.let { contentResolver.query(it,null,null,null,null) }
+            cursor!!.moveToFirst()
+            val index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+            val filepath = cursor.getString(index)
+            Log.e(TAG, "onActivityResult: path $filepath")
+            var file = File(filepath)
+            Log.e(TAG, "onActivityResult: $file", )
+            sendMediaMessage(file,CometChatConstants.MESSAGE_TYPE_IMAGE)
+
+        }
+    }
+
+    private fun sendMediaMessage(file : File,messageType : String){
+        Log.e(TAG, "sendImageMessage: $file", )
+        val receiver_uid = bundle.getString("ruserid")
+        val receiver_type = CometChatConstants.RECEIVER_TYPE_USER
+        var mediaMessage = MediaMessage(receiver_uid,file,messageType,receiver_type)
+        sendMediaMessage(mediaMessage, object : CallbackListener<MediaMessage>() {
+            override fun onSuccess(p0: MediaMessage?) {
+                Log.e(TAG, "onSuccess: p0", )
+                if (p0 != null) {
+                    var baseMessage = p0 as BaseMessage
+                    viewModel.addMessage(baseMessage)
+                }
+            }
+
+            override fun onError(p0: CometChatException?) {
+                Log.e(TAG, "onError: ${p0?.message}", )
+            }
+
+        })
     }
 }

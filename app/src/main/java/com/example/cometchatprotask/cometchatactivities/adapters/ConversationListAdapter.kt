@@ -40,7 +40,10 @@ class ConversationListAdapter(private val onClickInterface: OnClickInterface) : 
                             when(conversation.lastMessage.type){
                                 CometChatConstants.MESSAGE_TYPE_TEXT ->{binding.status.text =(conversation.lastMessage as TextMessage).text}
                                 CometChatConstants.MESSAGE_TYPE_AUDIO ->{}
-                                CometChatConstants.MESSAGE_TYPE_IMAGE ->{}
+                                CometChatConstants.MESSAGE_TYPE_IMAGE ->{binding.status.apply {
+                                    text="Image"
+                                    setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_baseline_image_24,0,0,0)
+                                }}
                                 CometChatConstants.MESSAGE_TYPE_VIDEO->{}
                                 CometChatConstants.MESSAGE_TYPE_FILE->{}
                             }
@@ -65,7 +68,9 @@ class ConversationListAdapter(private val onClickInterface: OnClickInterface) : 
                             when(conversation.lastMessage.type){
                                 CometChatConstants.MESSAGE_TYPE_TEXT ->{binding.status.text =(conversation.lastMessage as TextMessage).text}
                                 CometChatConstants.MESSAGE_TYPE_AUDIO ->{}
-                                CometChatConstants.MESSAGE_TYPE_IMAGE ->{}
+                                CometChatConstants.MESSAGE_TYPE_IMAGE ->{binding.status.text="Image"
+                                    binding.status.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_baseline_image_24,0,0,0)
+                                    binding.status.compoundDrawablePadding = 10 }
                                 CometChatConstants.MESSAGE_TYPE_VIDEO->{}
                                 CometChatConstants.MESSAGE_TYPE_FILE->{}
                             }

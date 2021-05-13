@@ -26,23 +26,29 @@ class RightMessageViewHolder(itemView : View) : BaseViewHolder(itemView)  {
     fun bind(message: BaseMessage){
         Log.e(TAG, "bind: ${(message as TextMessage).text}" )
         binding.rightMessage.text = (message as TextMessage).text.trim()
-        setTimeStamp(message)
+        binding.timestamp.text=CommonUtils.convertTimestampToDate(message.sentAt)
+        setReadReceipts(message)
     }
 
-    fun setTimeStamp(textMessage: BaseMessage){
+    fun setReadReceipts(textMessage: BaseMessage){
         Log.e(TAG, "setTimeStamp: ${textMessage.deliveredAt}")
         if(textMessage.readAt != 0L){
-            binding.timestamp.text=CommonUtils.convertTimestampToDate(textMessage.sentAt)
-            if(textMessage.receiver is User)binding.timestamp.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.message_seen_blue_tick,0,0,0)
-            binding.timestamp.compoundDrawablePadding = 10
+            if(textMessage.receiver is User){
+                binding.timestamp.apply{
+                    setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.message_seen_blue_tick,0,0,0)
+                    compoundDrawablePadding = 10
+                }
+            }
         }else if(textMessage.deliveredAt != 0L){
-            binding.timestamp.text=CommonUtils.convertTimestampToDate(textMessage.sentAt)
-            if(textMessage.receiver is User)binding.timestamp.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.message_delivered_double_tick,0,0,0)
-            binding.timestamp.compoundDrawablePadding = 10
+            if(textMessage.receiver is User)binding.timestamp.apply{
+                setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.message_delivered_double_tick,0,0,0)
+                compoundDrawablePadding = 10
+            }
         }else{
-            binding.timestamp.text=CommonUtils.convertTimestampToDate(textMessage.sentAt)
-            if(textMessage.receiver is User)binding.timestamp.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.message_sent_single_tick,0,0,0)
-            binding.timestamp.compoundDrawablePadding = 10
+            if(textMessage.receiver is User)binding.timestamp.apply{
+                setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.message_sent_single_tick,0,0,0)
+                compoundDrawablePadding = 10
+            }
         }
     }
 }

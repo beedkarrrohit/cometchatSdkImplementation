@@ -8,14 +8,12 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cometchat.pro.constants.CometChatConstants
 import com.cometchat.pro.core.CometChat
+import com.cometchat.pro.core.CometChat.*
 import com.cometchat.pro.models.Action
 import com.cometchat.pro.models.BaseMessage
 import com.cometchat.pro.models.MediaMessage
 import com.cometchat.pro.models.TextMessage
-import com.example.cometchatprotask.cometchatactivities.viewHolders.ActionViewHolder
-import com.example.cometchatprotask.cometchatactivities.viewHolders.BaseViewHolder
-import com.example.cometchatprotask.cometchatactivities.viewHolders.LeftMessageViewHolder
-import com.example.cometchatprotask.cometchatactivities.viewHolders.RightMessageViewHolder
+import com.example.cometchatprotask.cometchatactivities.viewHolders.*
 
 class GroupMessageAdapter: ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comparator) {
     //message type Mesaage
@@ -41,7 +39,6 @@ class GroupMessageAdapter: ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comp
 
     private val TAG = "GroupMessageAdapter"
     companion object{
-        private var viewTypes = 0
         private var comparator = object : DiffUtil.ItemCallback<BaseMessage>(){
             override fun areItemsTheSame(oldItem: BaseMessage, newItem: BaseMessage): Boolean {
                 return oldItem === newItem
@@ -60,6 +57,8 @@ class GroupMessageAdapter: ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comp
             LEFT_TEXT_MESSAGE-> LeftMessageViewHolder.create(parent)
             ACTION_GROUP_MEMBER-> ActionViewHolder.create(parent)
             ACTION_CALL-> ActionViewHolder.create(parent)
+            RIGHT_IMAGE_MESSAGE -> RightImageMessageViewHolder.create(parent)
+            LEFT_IMAGE_MESSAGE->LeftImageMessageViewHolder.create(parent)
             else -> ActionViewHolder.create(parent)
         }
     }
@@ -80,6 +79,14 @@ class GroupMessageAdapter: ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comp
                 val actionViewHolder = holder as ActionViewHolder
                 actionViewHolder.bind(baseMessage)
             }
+            RIGHT_IMAGE_MESSAGE->{
+                val rightImageMessageViewHolder = holder as RightImageMessageViewHolder
+                rightImageMessageViewHolder.bind(baseMessage)
+            }
+            LEFT_IMAGE_MESSAGE->{
+                val leftImageMessageViewHolder = holder as LeftImageMessageViewHolder
+                leftImageMessageViewHolder.bind(baseMessage)
+            }
         }
     }
 
@@ -93,12 +100,16 @@ class GroupMessageAdapter: ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comp
             CometChatConstants.CATEGORY_MESSAGE->{
                 when(message.type){
                     CometChatConstants.MESSAGE_TYPE_TEXT->{
-                        return if(message.sender.uid == CometChat.getLoggedInUser().uid){
+                        return if(message.sender.uid == getLoggedInUser().uid){
                             RIGHT_TEXT_MESSAGE
                         }else  LEFT_TEXT_MESSAGE
                     }
-                    /*CometChatConstants.MESSAGE_TYPE_IMAGE->{}
-                    CometChatConstants.MESSAGE_TYPE_AUDIO->{}
+                    CometChatConstants.MESSAGE_TYPE_IMAGE->{
+                        return if (message.sender.uid == getLoggedInUser().uid){
+                            RIGHT_IMAGE_MESSAGE
+                        }else LEFT_IMAGE_MESSAGE
+                    }
+                    /*CometChatConstants.MESSAGE_TYPE_AUDIO->{}
                     CometChatConstants.MESSAGE_TYPE_VIDEO->{}*/
                     else -> -1
                 }
@@ -114,18 +125,6 @@ class GroupMessageAdapter: ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comp
            // CometChatConstants.CATEGORY_CUSTOM->{}
             else -> -1
         }
-
-        /*if(message.category == CometChatConstants.CATEGORY_MESSAGE){
-            if(message.sender.uid == CometChat.getLoggedInUser().uid){
-                viewTypes = RIGHT_TEXT_MESSAGE
-                Log.e(TAG, "getItemsType: if called ${message.sender.uid} ${CometChat.getLoggedInUser().uid}", )
-            }else{
-                viewTypes = LEFT_TEXT_MESSAGE
-                Log.e(TAG, "getItemsType: else called ${message.sender.uid} ${CometChat.getLoggedInUser().uid}", )
-            }
-        }else if(message.category == CometChatConstants.CATEGORY_ACTION){
-            viewTypes = ACTION_MESSAGE
-        }*/
 
     }
 }

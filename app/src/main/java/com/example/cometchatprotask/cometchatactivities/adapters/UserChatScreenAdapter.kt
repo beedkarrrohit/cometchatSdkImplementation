@@ -9,14 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cometchat.pro.constants.CometChatConstants
 import com.cometchat.pro.core.Call
 import com.cometchat.pro.core.CometChat
+import com.cometchat.pro.core.CometChat.*
 import com.cometchat.pro.models.Action
 import com.cometchat.pro.models.BaseMessage
 import com.cometchat.pro.models.TextMessage
 import com.example.cometchatprotask.R
-import com.example.cometchatprotask.cometchatactivities.viewHolders.ActionViewHolder
-import com.example.cometchatprotask.cometchatactivities.viewHolders.BaseViewHolder
-import com.example.cometchatprotask.cometchatactivities.viewHolders.LeftMessageViewHolder
-import com.example.cometchatprotask.cometchatactivities.viewHolders.RightMessageViewHolder
+import com.example.cometchatprotask.cometchatactivities.viewHolders.*
 
 
 class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(comparator) {
@@ -32,7 +30,7 @@ class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(c
             }
 
         }
-        //message type Mesaage
+        //message type Message
         private val RIGHT_TEXT_MESSAGE = 1
         private val LEFT_TEXT_MESSAGE = 2
         private val RIGHT_IMAGE_MESSAGE = 3
@@ -54,15 +52,12 @@ class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(c
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         Log.e(TAG, "itemViewType $viewType" )
         return when(viewType){
-            RIGHT_TEXT_MESSAGE -> {
-                RightMessageViewHolder.create(parent)
-            }
-            LEFT_TEXT_MESSAGE -> {
-                LeftMessageViewHolder.create(parent)
-            }
-            ACTION_CALL -> {
-                ActionViewHolder.create(parent)
-            }else -> ActionViewHolder.create(parent)
+            RIGHT_TEXT_MESSAGE -> RightMessageViewHolder.create(parent)
+            LEFT_TEXT_MESSAGE -> LeftMessageViewHolder.create(parent)
+            ACTION_CALL -> ActionViewHolder.create(parent)
+            RIGHT_IMAGE_MESSAGE-> RightImageMessageViewHolder.create(parent)
+            LEFT_IMAGE_MESSAGE -> LeftImageMessageViewHolder.create(parent)
+            else -> ActionViewHolder.create(parent)
         }
     }
 
@@ -82,6 +77,14 @@ class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(c
             ACTION_CALL ->{
                 val actionViewHolder = holder as ActionViewHolder
                 actionViewHolder.bind(baseMessage)
+            }
+            RIGHT_IMAGE_MESSAGE -> {
+                val rightImageMessageViewHolder = holder as RightImageMessageViewHolder
+                rightImageMessageViewHolder.bind(baseMessage)
+            }
+            LEFT_IMAGE_MESSAGE -> {
+                val leftImageMessageViewHolder = holder as LeftImageMessageViewHolder
+                leftImageMessageViewHolder.bind(baseMessage)
             }
         }
     }
@@ -103,16 +106,15 @@ class UserChatScreenAdapter : ListAdapter<BaseMessage,RecyclerView.ViewHolder>(c
         return when(message.category){
             CometChatConstants.CATEGORY_MESSAGE->{
                 when(message.type){
-                    CometChatConstants.MESSAGE_TYPE_TEXT-> return if(message.sender.uid ==  CometChat.getLoggedInUser().uid) RIGHT_TEXT_MESSAGE else LEFT_TEXT_MESSAGE
-                    /*CometChatConstants.MESSAGE_TYPE_IMAGE->{}
-                    CometChatConstants.MESSAGE_TYPE_VIDEO->{}
+                    CometChatConstants.MESSAGE_TYPE_TEXT-> return if(message.sender.uid == getLoggedInUser().uid) RIGHT_TEXT_MESSAGE else LEFT_TEXT_MESSAGE
+                    CometChatConstants.MESSAGE_TYPE_IMAGE-> return if(message.sender.uid == getLoggedInUser().uid) RIGHT_IMAGE_MESSAGE else LEFT_IMAGE_MESSAGE
+                    /*CometChatConstants.MESSAGE_TYPE_VIDEO->{}
                     CometChatConstants.MESSAGE_TYPE_FILE->{}
                     CometChatConstants.MESSAGE_TYPE_AUDIO->{}
                     CometChatConstants.MESSAGE_TYPE_CUSTOM->{}*/
                     else -> -1
                 }
             }
-            //CometChatConstants.CATEGORY_CUSTOM->{}
             CometChatConstants.CATEGORY_CALL->{
                 return ACTION_CALL
             }else-> -1

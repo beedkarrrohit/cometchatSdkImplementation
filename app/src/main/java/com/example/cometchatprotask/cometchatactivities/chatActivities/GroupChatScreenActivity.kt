@@ -1,7 +1,10 @@
 package com.example.cometchatprotask.cometchatactivities.chatActivities
 
+import android.Manifest
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
 import android.view.Menu
@@ -16,19 +19,22 @@ import com.cometchat.pro.exceptions.CometChatException
 import com.cometchat.pro.models.*
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.adapters.GroupMessageAdapter
+import com.example.cometchatprotask.cometchatactivities.bottomSheetFragment.AttachBottomSheet
 import com.example.cometchatprotask.cometchatactivities.viewModels.GroupChatScreenViewModel
 import com.example.cometchatprotask.databinding.ActivityGroupChatScreenBinding
 import com.example.cometchatprotask.databinding.CreateTextMessageLayoutBinding
 import com.example.cometchatprotask.handler.toast
 import com.example.cometchatprotask.utils.Utils
+import java.io.File
 
-class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
+class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener,AttachBottomSheet.BottomSheetListener {
     lateinit var binding : ActivityGroupChatScreenBinding
     lateinit var subBinding : CreateTextMessageLayoutBinding
     lateinit var bundle: Bundle
     lateinit var adapter: GroupMessageAdapter
     lateinit var viewModel : GroupChatScreenViewModel
     private  val TAG = "GroupChatScreenActivity"
+    lateinit var attachBottomSheet: AttachBottomSheet
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityGroupChatScreenBinding.inflate(layoutInflater)
@@ -39,10 +45,12 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         supportActionBar?.setHomeButtonEnabled(true)
         bundle = intent.extras!!
         viewModel = ViewModelProvider(this).get(GroupChatScreenViewModel::class.java)
+        attachBottomSheet = AttachBottomSheet()
         setupFields()
         fetchMessage()
         viewModel.getMessageList().observe(this,{
             adapter.submitList(it)
+            adapter.notifyDataSetChanged()
             if(adapter.itemCount > 5)binding.groupRecy.scrollToPosition(adapter.itemCount -1)
         })
     }
@@ -52,7 +60,10 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         binding.groupName.text = bundle.getString("gname")
         adapter = GroupMessageAdapter()
         binding.groupRecy.adapter = adapter
-        subBinding.sendBtn.setOnClickListener(this)
+        subBinding.apply {
+            sendBtn.setOnClickListener(this@GroupChatScreenActivity)
+            buttonAttach.setOnClickListener(this@GroupChatScreenActivity)
+        }
 
     }
 
@@ -160,6 +171,15 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
                     subBinding.edtMsg.text = null
                 }
             }
+            R.id.button_attach -> {
+                if(!Utils.hasPermissions(this, Manifest.permission.READ_EXTERNAL_STORAGE) && !Utils.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                        requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE),100)
+                    }
+                }else{
+                    attachBottomSheet.show(supportFragmentManager,TAG)
+                }
+            }
         }
     }
 
@@ -187,5 +207,54 @@ class GroupChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         if(groupId != null) Utils.initiateCall(this,groupId,CometChatConstants.RECEIVER_TYPE_GROUP,callType)
     }
 
+    override fun onButtonClicked(id: Int) {
+        when(id){
+            R.id.send_image ->{
+                val intent = Intent(Intent.ACTION_PICK)
+                intent.type = "image/*"
+                startActivityForResult(intent,100)
+            }
+        }
+    }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when(requestCode){
+            100 -> {
+                if(resultCode == RESULT_OK && data != null){
+                    val selectedImage = data.data
+                    Log.e(TAG, "onActivityResult: $selectedImage")
+                    val cursor = selectedImage?.let { contentResolver.query(it,null,null,null,null) }
+                    cursor!!.moveToFirst()
+                    val index = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+                    val filepath = cursor.getString(index)
+                    Log.e(TAG, "onActivityResult: path $filepath")
+                    var file = File(filepath)
+                    Log.e(TAG, "onActivityResult: $file", )
+                    sendMediaMessage(file,CometChatConstants.MESSAGE_TYPE_IMAGE)
+                }
+            }
+        }
+    }
+
+    private fun sendMediaMessage(file : File,messageType : String){
+        Log.e(TAG, "sendImageMessage: $file", )
+        val receiver_uid = bundle.getString("guid")
+        val receiver_type = CometChatConstants.RECEIVER_TYPE_GROUP
+        var mediaMessage = MediaMessage(receiver_uid,file,messageType,receiver_type)
+        CometChat.sendMediaMessage(mediaMessage, object : CometChat.CallbackListener<MediaMessage>() {
+            override fun onSuccess(p0: MediaMessage?) {
+                Log.e(TAG, "onSuccess: p0", )
+                if (p0 != null) {
+                    var baseMessage = p0 as BaseMessage
+                    viewModel.addMessage(baseMessage)
+                }
+            }
+
+            override fun onError(p0: CometChatException?) {
+                Log.e(TAG, "onError: ${p0?.message}", )
+            }
+
+        })
+    }
 }
