@@ -19,13 +19,15 @@ import com.cometchat.pro.models.*
 import com.cometchat.pro.models.User
 import com.example.cometchatprotask.R
 import com.example.cometchatprotask.cometchatactivities.adapters.UserChatScreenAdapter
+import com.example.cometchatprotask.cometchatactivities.bottomSheetFragment.AttachBottomSheet
 import com.example.cometchatprotask.cometchatactivities.viewModels.ChatScreenViewModel
 import com.example.cometchatprotask.databinding.ActivityChatScreenBinding
 import com.example.cometchatprotask.databinding.CreateTextMessageLayoutBinding
+import com.example.cometchatprotask.handler.toast
 import com.example.cometchatprotask.utils.Utils
 import java.util.*
 
-class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
+class ChatScreenActivity : AppCompatActivity(),View.OnClickListener,AttachBottomSheet.BottomSheetListener {
     lateinit var chatScreenBinding: ActivityChatScreenBinding
     lateinit var subBinding : CreateTextMessageLayoutBinding
     private  val TAG = "ChatScreenActivity"
@@ -33,6 +35,7 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
     lateinit var chatAdapter : UserChatScreenAdapter
     lateinit var viewModel : ChatScreenViewModel
     val list : MutableList<BaseMessage> = ArrayList()
+    lateinit var attachBottomSheet: AttachBottomSheet
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         chatScreenBinding= ActivityChatScreenBinding.inflate(layoutInflater)
@@ -42,15 +45,16 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
         bundle = intent.extras!!
+        attachBottomSheet = AttachBottomSheet()
         viewModel = ViewModelProvider(this).get(ChatScreenViewModel::class.java)
         setupFields()
         fetchMessage()
         viewModel.getMessageList().observe(this, {
-            Log.e(TAG, "onCreateListObserver1: ${it[it.size-1]}" )
+            //Log.e(TAG, "onCreateListObserver1: ${it[it.size-1]}" )
             chatAdapter.submitList(it.toMutableList())
             chatAdapter.notifyDataSetChanged()
             if(chatAdapter.itemCount > 5) chatScreenBinding.chatscreenRecycler.scrollToPosition(chatAdapter.itemCount -1)
-            Log.e(TAG, "onCreateListObserver2: ${it[it.size-1]}" )
+            //Log.e(TAG, "onCreateListObserver2: ${it[it.size-1]}" )
         })
     }
 
@@ -60,7 +64,10 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         chatScreenBinding.toolbarStatus.text = bundle.getString("status")
         Glide.with(this).load(bundle.getString("avatar"))
                 .centerCrop().placeholder(R.drawable.user).into(chatScreenBinding.avatar)
-        subBinding.sendBtn.setOnClickListener(this)
+        subBinding.apply {
+            sendBtn.setOnClickListener(this@ChatScreenActivity)
+            buttonAttach.setOnClickListener(this@ChatScreenActivity)
+        }
         chatAdapter = UserChatScreenAdapter()
         chatScreenBinding.chatscreenRecycler.adapter = chatAdapter
 
@@ -73,6 +80,9 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
                 val textMessage = TextMessage(userid!!,subBinding.edtMsg.text.toString(),CometChatConstants.RECEIVER_TYPE_USER)
                 subBinding.edtMsg.text = null
                 sendMessage(textMessage)
+            }
+            R.id.button_attach ->{
+                attachBottomSheet.show(supportFragmentManager,TAG)
             }
         }
     }
@@ -280,5 +290,9 @@ class ChatScreenActivity : AppCompatActivity(),View.OnClickListener {
         removemessageListener()
         removeUserListener(TAG)
         sendTypingMessage(false)
+    }
+
+    override fun onButtonClicked(s: String) {
+        this.toast(s)
     }
 }

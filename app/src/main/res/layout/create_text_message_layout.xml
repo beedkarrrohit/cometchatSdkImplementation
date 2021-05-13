@@ -5,6 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/button_attach"
+        android:background="?attr/selectableItemBackground"
+        android:src="@drawable/ic_baseline_add_circle_24"
+        />
+
     <EditText
         android:id="@+id/edt_msg"
         android:layout_width="0dp"
@@ -18,7 +29,7 @@
         android:padding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/send_btn"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/button_attach"
         app:layout_constraintTop_toTopOf="parent" />
 
     <!--<com.google.android.material.floatingactionbutton.FloatingActionButton
